@@ -1,0 +1,65 @@
+---
+title: "Within_between modeling"
+---
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(datawizard) # for meaning and demeaning
+library(jtools) # for formatting the output
+library(lme4) # For fitting the multilevel model.
+set.seed(256)
+
+readRDS("Data_BjetX.RDS") -> Data_Bjet
+
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+#check if model predictors or variables may cause a heterogeneity bias, i.e. if variables have a within- and/or between-effect.
+
+performance	::check_heterogeneity_bias(Data_Bjet ,select = c("Freq_Course_View", "Freq_Forum_Consume", "Freq_Forum_Contribute", "Freq_Lecture_View", "Regularity_Course_View", "Session_Count",   "Total_Duration"), group = "User")
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# use datawizard::demean to create the withih and between versions of each variables
+
+Demeaned_data <- datawizard::demean(Data_Bjet , select = c("Freq_Course_View", "Freq_Forum_Consume", "Freq_Forum_Contribute", "Freq_Lecture_View", "Regularity_Course_View", "Session_Count",  "Total_Duration"), group = "User")
+
+### Bind the data to the original data to create  retain all the variables
+cbind(Demeaned_data, Data_Bjet)->Data_for_model
+
+```
+
+
+#########################################################################
+#################  Traditional Model   #########################
+#########################################################################
+
+
+```{r message=FALSE, warning=FALSE}
+#Here we fit the traditional model, the indepdent variable is the final grade, the random effects are the user and course since they are nested.
+
+Traditional_model =lmer(Final_Grade ~ Freq_Course_View + Freq_Forum_Consume+Freq_Forum_Contribute+ Freq_Lecture_View + Regularity_Course_View + Total_Duration  +(1| User)  +(1| Course) , data=  Data_for_model)
+
+
+#Get summary for the model nicely formated
+
+summ(Traditional_model, confint = TRUE, digits = 2)
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+# Here we fit within between model with same random effects, the user and course since they are nested.
+
+Within_betweenmodel =lmer(Final_Grade ~  Freq_Course_View_within + Freq_Forum_Consume_within+Freq_Forum_Contribute_within+Freq_Lecture_View_within+ Regularity_Course_View_within + Total_Duration_within+Freq_Course_View_between + Freq_Forum_Consume_between+Freq_Forum_Contribute_between+ Freq_Lecture_View_between+ Regularity_Course_View_between + Total_Duration_between +(1| User) +(1| Course) , data=  Data_for_model)
+
+#Get summary for the model nicely formated
+
+summ(Within_betweenmodel, confint = TRUE, digits = 2)
+
+```
+
+
+
+
