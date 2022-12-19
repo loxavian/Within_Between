@@ -1,5 +1,6 @@
 ---
 title: "Within_between modeling"
+#Created by Mohammed Saqr to accompany the manuscript: Modeling within-person idiographic variance could help explain and individualize learning
 ---
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(datawizard) # for meaning and demeaning
